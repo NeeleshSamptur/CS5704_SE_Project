@@ -33,7 +33,7 @@ export default function App() {
       <h1 style={{ fontSize: 28, fontWeight: 800 }}>SE Docs — React UI + Prompt Library</h1>
 
       <PromptForm
-        initialRepo="/Users/srikanth/fastapi"
+        initialRepo="/Users/Rishab_Kshatri/Work2/personal/fastapi"
         prompt={prompt}
         onChangePrompt={setPrompt}
         onSubmit={handleSubmit}

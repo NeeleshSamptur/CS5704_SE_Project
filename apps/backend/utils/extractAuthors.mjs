@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { buildPromptContext } from "../services/repoContext.mjs";
+import config from "../config.mjs";
 
 /**
  * Extract authors from a repository and save to a JSON file
@@ -153,19 +154,30 @@ export async function extractTopContributors(
 
 // CLI usage example
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const repoPath = process.argv[2];
-  const format = process.argv[3] || "json"; // json, csv, or top
-  const outputPath = process.argv[4];
+  // Parse arguments intelligently
+  let repoPath, format, outputPath;
   
-  if (!repoPath) {
-    console.error("Usage: node extractAuthors.mjs <repo-path> [format] [output-path]");
-    console.error("Format options: json (default), csv, top");
-    console.error("\nExamples:");
-    console.error("  node extractAuthors.mjs /path/to/repo");
-    console.error("  node extractAuthors.mjs /path/to/repo csv");
-    console.error("  node extractAuthors.mjs /path/to/repo top authors.json");
-    process.exit(1);
+  const arg1 = process.argv[2];
+  const validFormats = ['json', 'csv', 'top'];
+  
+  if (!arg1) {
+    // No args: use config defaults
+    repoPath = config.defaultRepoPath;
+    format = config.authorExtraction.defaultFormat;
+  } else if (validFormats.includes(arg1.toLowerCase())) {
+    // First arg is format: use config repo path
+    repoPath = config.defaultRepoPath;
+    format = arg1.toLowerCase();
+    outputPath = process.argv[3];
+  } else {
+    // First arg is repo path
+    repoPath = arg1;
+    format = process.argv[3] || config.authorExtraction.defaultFormat;
+    outputPath = process.argv[4];
   }
+  
+  console.log(`📂 Repository: ${repoPath}`);
+  console.log(`📋 Format: ${format}\n`);
   
   try {
     let result;
@@ -188,6 +200,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     }
   } catch (error) {
     console.error("❌ Error:", error.message);
+    console.error("\nUsage: node extractAuthors.mjs [repo-path] [format] [output-path]");
+    console.error("Format options: json (default), csv, top");
+    console.error("\nExamples:");
+    console.error("  node extractAuthors.mjs                    # Uses config.mjs");
+    console.error("  node extractAuthors.mjs /path/to/repo      # Override repo");
+    console.error("  node extractAuthors.mjs /path/to/repo csv  # CSV format");
     process.exit(1);
   }
 }
