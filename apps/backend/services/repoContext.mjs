@@ -22,6 +22,9 @@ export async function buildPromptContext(repoPath, { refreshRemote = false } = {
     getFeatures(repoPath),
   ]);
 
+  console.log("authrddds",authors)
+  console.log("ddd",releases)
+
   const updatedAt = new Date().toISOString();
   return {
     RN: { releases },        // [{tag, date?}] newest first when possible
@@ -30,6 +33,9 @@ export async function buildPromptContext(repoPath, { refreshRemote = false } = {
     meta: { updatedAt, repoPath }
   };
 }
+
+
+
 
 // --- helpers ---
 async function getReleases(git, limit = 800) {

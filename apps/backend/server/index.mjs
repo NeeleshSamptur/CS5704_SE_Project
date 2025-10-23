@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { buildPromptContext } from "../services/repoContext.mjs";
-import { runPromptCategorizerHybrid } from "../agents/promptCategorizer.js";
+import { runCategorizerAgent } from "../graph/categorizer.graph.mjs";
 
 const app = express();
 app.use(cors());
@@ -25,10 +25,11 @@ app.post("/categorize", async (req, res) => {
 
     // 1) Build context JSON (fresh each request; optional git fetch)
     const contextJSON = await buildPromptContext(repoPath, { refreshRemote: !!refresh });
+    //author and RN list using git tools
 
     // 2) Run hybrid categorizer with that JSON
-    const observation = await runPromptCategorizerHybrid({ prompt, repoPath }, contextJSON);
-
+    const observation = await runCategorizerAgent({ prompt, repoPath, context: contextJSON });
+    
     res.json({
       ok: true,
       tool: {

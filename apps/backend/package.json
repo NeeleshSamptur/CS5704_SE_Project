@@ -3,14 +3,18 @@
   "version": "1.0.0",
   "type": "module",
   "main": "index.js",
-  "scripts": { "dev": "node server/index.mjs" },
+  "scripts": {
+    "dev": "node server/index.mjs"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@langchain/langgraph": "^1.0.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "langchain": "^1.0.1",
     "simple-git": "^3.28.0"
   }
 }

@@ -21,10 +21,10 @@ async function getRepoPathFromAppJsx() {
     }
     
     console.warn("⚠️  Could not find initialRepo in App.jsx, using fallback");
-    return "/Users/Rishab_Kshatri/Work2/personal/fastapi";
+    return "/Users/Work2/personal/fastapi";
   } catch (error) {
     console.warn("⚠️  Could not read App.jsx:", error.message);
-    return "/Users/Rishab_Kshatri/Work2/personal/fastapi";
+    return "/Users/personal/fastapi";
   }
 }
 

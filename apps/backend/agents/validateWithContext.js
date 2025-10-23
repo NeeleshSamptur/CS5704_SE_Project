@@ -26,28 +26,32 @@ function authorMatch(candidate, authors) {
 export function validateWithContext(docType, extracted, context) {
   const ctx = context || { tags: [], authors: [], features: [] };
   let { from_tag, to_tag, person, feature } = extracted || {};
-  let bonus = 0;
+  let matches = 0;
+  let possible = 0;
 
   if (docType === "RN") {
+    possible += 2;
     const f = snapToList(from_tag, ctx.tags);
     const t = snapToList(to_tag, ctx.tags);
     from_tag = f.value; to_tag = t.value;
-    if (f.matched) bonus += 0.05;
-    if (t.matched) bonus += 0.05;
+    if (f.matched) matches += 1;
+    if (t.matched) matches += 1;
   }
   if (docType === "PKT") {
+    possible += 1;
     const m = authorMatch(person, ctx.authors);
     person = m.value;
-    if (m.matched) bonus += 0.1;
+    if (m.matched) matches += 1;
   }
-  if (docType === "FKT") {
-    const m = snapToList(feature, ctx.features);
-    feature = m.value;
-    if (m.matched) bonus += 0.05;
-  }
+  // if (docType === "FKT") {
+  //   possible += 1;
+  //   const m = snapToList(feature, ctx.features);
+  //   feature = m.value;
+  //   if (m.matched) matches += 1;
+  // }
 
   return {
     extracted: { from_tag: from_tag || null, to_tag: to_tag || null, person: person || null, feature: feature || null },
-    confidenceBonus: Math.min(bonus, 0.15)
+    contextConfidence: possible ? matches / possible : 0
   };
 }
