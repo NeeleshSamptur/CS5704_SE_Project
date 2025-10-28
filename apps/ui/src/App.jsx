@@ -30,7 +30,7 @@ export default function App() {
 
   return (
     <div style={{ maxWidth: 1000, margin: "40px auto", fontFamily: "Inter, ui-sans-serif, system-ui" }}>
-      <h1 style={{ fontSize: 28, fontWeight: 800 }}>SE Docs — React UI + Prompt Library</h1>
+      <h1 style={{ fontSize: 28, fontWeight: 800 }}>Release Notes Generator</h1>
 
       <PromptForm
         initialRepo="/Users/personal/fastapi"
