@@ -16,10 +16,9 @@ export async function buildPromptContext(repoPath, { refreshRemote = false } = {
     }
   }
 
-  const [releases, authors, features] = await Promise.all([
-    getReleases(git, 800),
-    getAuthors(git, 800),
-    getFeatures(repoPath),
+  const [releases, authors] = await Promise.all([
+    getReleases(git),
+    getAuthors(git),
   ]);
 
   console.log("authrddds",authors)
@@ -29,7 +28,6 @@ export async function buildPromptContext(repoPath, { refreshRemote = false } = {
   return {
     RN: { releases },        // [{tag, date?}] newest first when possible
     PKT: { authors },        // [{name, email}]
-    FKT: { features },       // ["moduleA","moduleB",...]
     meta: { updatedAt, repoPath }
   };
 }
@@ -38,7 +36,7 @@ export async function buildPromptContext(repoPath, { refreshRemote = false } = {
 
 
 // --- helpers ---
-async function getReleases(git, limit = 800) {
+async function getReleases(git) {
   try {
     const raw = await git.raw([
       "for-each-ref",
@@ -50,26 +48,24 @@ async function getReleases(git, limit = 800) {
       .split("\n")
       .map(l => l.trim())
       .filter(Boolean)
-      .slice(0, limit)
       .map(line => {
         const [tag, date] = line.split("|");
         return { tag, date };
       });
   } catch {
     const t = await git.tags();
-    const all = (t.all || []).slice(-limit).reverse();
+    const all = (t.all || []).reverse();
     return all.map(tag => ({ tag, date: null }));
   }
 }
 
-async function getAuthors(git, limit = 1000) {
+async function getAuthors(git) {
   const raw = await git.raw(["shortlog", "-se", "HEAD"]);
   const lines = raw.split("\n").map(l => l.trim()).filter(Boolean);
   const authors = lines.map(l => ({ name: l.replace(/^\d+\s+/, ""), email: "" }));
 
-  const cap = Math.min(limit, 250);
   await Promise.all(
-    authors.slice(0, cap).map(async (a) => {
+    authors.map(async (a) => {
       try {
         const out = await git.raw(["log", "-1", `--author=${a.name}`, "--format=%ae"]);
         a.email = (out.split("\n")[0] || "").trim();
@@ -77,13 +73,5 @@ async function getAuthors(git, limit = 1000) {
     })
   );
 
-  return authors.slice(0, limit);
-}
-
-async function getFeatures(repoPath) {
-  const dirents = await fs.readdir(repoPath, { withFileTypes: true });
-  return dirents
-    .filter(d => d.isDirectory() && !d.name.startsWith(".") && d.name !== ".git")
-    .map(d => d.name)
-    .sort();
+  return authors;
 }
