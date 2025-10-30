@@ -30,7 +30,7 @@ function rulePass(prompt) {
     // if (fkt > rn && fkt >= pkt) doc_type = "FKT";
   }
 
-  const extracted = { from_tag: null, to_tag: null, person: null, feature: null };
+  const extracted = { from_tag: null, to_tag: null, person: null };
   const mPerson = prompt.match(/\bby\s+(@?[a-z0-9._-]+)/i);
   if (mPerson) extracted.person = mPerson[1];
 
@@ -53,13 +53,16 @@ function rulePass(prompt) {
 
 export async function runPromptCategorizerHybrid(input, contextJSON) {
   const prompt = (input?.prompt || "").trim();
-
   // Map JSON → validator shape
   const repoContext = {
     tags: (contextJSON?.RN?.releases || []).map(r => r.tag),
-    authors: (contextJSON?.PKT?.authors || []).map(a => ({ name: a.name, email: a.email, aliases: [] })),
+    authors: (contextJSON?.PKT?.authors || []).map(a => {
+      const cleanName = a.name.replace(/\s*<.*>/, ""); // removes " <email>"
+      return { name: cleanName, email: a.email, aliases: [] };
+    })
     // features: contextJSON?.FKT?.features || []
   };
+
 
   const { doc_type, extracted, ruleConfidence, ruleStrength } = rulePass(prompt);
   const { extracted: fixed, contextConfidence } = validateWithContext(doc_type, extracted, repoContext);

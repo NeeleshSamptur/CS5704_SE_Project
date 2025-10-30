@@ -5,8 +5,8 @@ function snapToList(candidate, list) {
   const c = normalize(candidate);
   const exact = list.find(x => normalize(x) === c);
   if (exact) return { value: exact, matched: true };
-  const starts = list.find(x => normalize(x).startsWith(c));
-  if (starts) return { value: starts, matched: true };
+  // const starts = list.find(x => normalize(x).startsWith(c));
+  // if (starts) return { value: starts, matched: true };
   return { value: candidate, matched: false };
 }
 
@@ -51,7 +51,7 @@ export function validateWithContext(docType, extracted, context) {
   // }
 
   return {
-    extracted: { from_tag: from_tag || null, to_tag: to_tag || null, person: person || null, feature: feature || null },
+    extracted: { from_tag: from_tag || null, to_tag: to_tag || null, person: person || null },
     contextConfidence: possible ? matches / possible : 0
   };
 }

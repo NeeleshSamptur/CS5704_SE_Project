@@ -21,8 +21,7 @@ export async function buildPromptContext(repoPath, { refreshRemote = false } = {
     getAuthors(git),
   ]);
 
-  console.log("authrddds",authors)
-  console.log("ddd",releases)
+ 
 
   const updatedAt = new Date().toISOString();
   return {
