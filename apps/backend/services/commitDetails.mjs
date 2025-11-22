@@ -1,4 +1,14 @@
 import simpleGit from "simple-git";
+import pkg from 'pg';
+const { Pool } = pkg;
+
+const pool = new Pool({
+  user: 'neeleshsamptur',
+  host: 'localhost',        // or '/tmp' if you want socket path
+  database: 'commit_tracker',
+  port: 5432
+});
+
 
 /**
  * Fetch commit metadata plus diff and associated tags for a repository.
@@ -17,16 +27,14 @@ import simpleGit from "simple-git";
  *   diff: string
  * }>>}
  */
-export async function fetchCommitDetails(repoPath, { limit = 100, from, to } = {}) {
+export async function fetchCommitDetails(repoPath, { from, to } = {}) {
   if (!repoPath) {
     throw new Error("fetchCommitDetails requires a repoPath");
   }
 
   const git = simpleGit({ baseDir: repoPath });
   const logOptions = {};
-  if (limit && limit > 0) {
-    logOptions.n = limit;
-  }
+ 
   if (from && to) {
     logOptions.from = from;
     logOptions.to = to;
@@ -39,7 +47,6 @@ export async function fetchCommitDetails(repoPath, { limit = 100, from, to } = {
   const log = await git.log(logOptions);
   const commits = log.all || [];
 
-  const details = [];
   for (const commit of commits) {
     const { hash, message, author_name, author_email, date } = commit;
 
@@ -66,21 +73,35 @@ export async function fetchCommitDetails(repoPath, { limit = 100, from, to } = {
       }
     }
 
+
     // Patch between this commit and its parent(s)
     const diff = await git.diff([`${hash}^!`]);
 
-    details.push({
-      commitId: hash,
-      message,
-      author: { name: author_name, email: author_email },
-      committedAt: date,
-      releaseTags,
-      diff,
-      codeDiff: diff
-    });
-  }
+    // details.push({
+    //   commit_id: hash,
+    //   message:message,
+    //   author_name: author_name,
+    //   author_email: author_email ,
+    //   committedAt: date,
+    //   release_tag:releaseTags,
+    //   code_diff: diff
+    // });
 
-  return details;
+  //   try {
+  //     await pool.query(
+  //       `INSERT INTO public.commits
+  //        (commit_id, message, author_name, author_email, committed_at, release_tag, code_diff)
+  //        VALUES ($1,$2,$3,$4,$5,$6,$7)
+  //        ON CONFLICT (commit_id) DO NOTHING`,
+  //       [hash, message, author_name, author_email, date, releaseTags[0], diff]
+  //     );
+  //   } catch (err) {
+  //     console.error(`Failed to insert commit ${hash}:`, err);
+  //   }
+  
+  // }
+
+  // return details;
 }
 
 function isBotAuthor(name = "", email = "") {
