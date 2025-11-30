@@ -9,11 +9,11 @@ export async function categorizerNode(state = {}) {
 
   try {
     const observation = await runPromptCategorizerHybrid({ prompt, repoPath }, context);
-    console.log("[categorizerNode] heuristic observation:", {
-      doc_type: observation?.doc_type,
-      confidence: observation?.confidence,
-      extracted: observation?.extracted
-    });
+    // console.log("[categorizerNode] heuristic observation:", {
+    //   doc_type: observation?.doc_type,
+    //   confidence: observation?.confidence,
+    //   extracted: observation?.extracted
+    // });
     return { ...state, draft: observation };
   } catch (error) {
     const message = error?.message || String(error);
