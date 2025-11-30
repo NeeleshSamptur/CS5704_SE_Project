@@ -31,17 +31,34 @@ function rulePass(prompt) {
   }
 
   const extracted = { from_tag: null, to_tag: null, person: null };
-  const mPerson = prompt.match(/\bby\s+(@?[a-z0-9._-]+)/i);
-  if (mPerson) extracted.person = mPerson[1];
+  // const mPerson = prompt.match(/\bby\s+(@?[a-z0-9._-]+)/i);
+  // const mPerson = prompt.match(/\b(?:by|for)\s+(@?[a-z0-9._-]+)/i);
+  const mPerson = prompt.match(
+    /\b(?:by|for)\s+([A-Za-z][A-Za-z .'-]{1,60})/i
+  );  
+  if (mPerson) extracted.person = mPerson[1].trim();
 
   // const mFeat = prompt.match(/(?:feature|module)\s+([a-z0-9._-]+)/i);
   // if (mFeat) extracted.feature = mFeat[1];
 
+  // const tags = prompt.match(new RegExp(VERSION.source, "gi")) || [];
+  // if (tags.length >= 2) {
+  //   extracted.from_tag = tags[0];
+  //   extracted.to_tag   = tags[1];
+  // }
+
   const tags = prompt.match(new RegExp(VERSION.source, "gi")) || [];
-  if (tags.length >= 2) {
-    extracted.from_tag = tags[0];
-    extracted.to_tag   = tags[1];
-  }
+
+if (tags.length >= 2) {
+  // two versions given → normal behavior
+  extracted.from_tag = tags[0];
+  extracted.to_tag = tags[1];
+} else if (tags.length === 1) {
+  // single version given → only fill to_tag, leave from_tag null
+  extracted.from_tag = null;
+  extracted.to_tag = tags[0];
+}
+
 
   const top = doc_type === "RN" ? rn : doc_type === "PKT" ? pkt : 0; // feature-centric KT disabled
   const denom = Math.max(1, total /* + fkt */);
@@ -52,6 +69,7 @@ function rulePass(prompt) {
 }
 
 export async function runPromptCategorizerHybrid(input, contextJSON) {
+  // console.log("ContextJSON",JSON.stringify(contextJSON));
   const prompt = (input?.prompt || "").trim();
   // Map JSON → validator shape
   const repoContext = {

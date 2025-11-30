@@ -2,9 +2,12 @@ import simpleGit from "simple-git";
 import pkg from 'pg';
 const { Pool } = pkg;
 
+
+
 const pool = new Pool({
   user: 'neeleshsamptur',
-  host: 'localhost',        // or '/tmp' if you want socket path
+  password: 'password',   // add this
+  host: '127.0.0.1',      // safest option
   database: 'commit_tracker',
   port: 5432
 });
@@ -46,6 +49,7 @@ export async function fetchCommitDetails(repoPath, { from, to } = {}) {
 
   const log = await git.log(logOptions);
   const commits = log.all || [];
+  const details = [];
 
   for (const commit of commits) {
     const { hash, message, author_name, author_email, date } = commit;
@@ -77,31 +81,31 @@ export async function fetchCommitDetails(repoPath, { from, to } = {}) {
     // Patch between this commit and its parent(s)
     const diff = await git.diff([`${hash}^!`]);
 
-    // details.push({
-    //   commit_id: hash,
-    //   message:message,
-    //   author_name: author_name,
-    //   author_email: author_email ,
-    //   committedAt: date,
-    //   release_tag:releaseTags,
-    //   code_diff: diff
-    // });
+    details.push({
+      commit_id: hash,
+      message:message,
+      author_name: author_name,
+      author_email: author_email ,
+      committedAt: date,
+      release_tag:releaseTags,
+      code_diff: diff
+    });
 
-  //   try {
-  //     await pool.query(
-  //       `INSERT INTO public.commits
-  //        (commit_id, message, author_name, author_email, committed_at, release_tag, code_diff)
-  //        VALUES ($1,$2,$3,$4,$5,$6,$7)
-  //        ON CONFLICT (commit_id) DO NOTHING`,
-  //       [hash, message, author_name, author_email, date, releaseTags[0], diff]
-  //     );
-  //   } catch (err) {
-  //     console.error(`Failed to insert commit ${hash}:`, err);
-  //   }
+    // try {
+    //   await pool.query(
+    //     `INSERT INTO public.commits
+    //      (commit_id, message, author_name, author_email, committed_at, release_tag, code_diff)
+    //      VALUES ($1,$2,$3,$4,$5,$6,$7)
+    //      ON CONFLICT (commit_id) DO NOTHING`,
+    //     [hash, message, author_name, author_email, date, releaseTags[0], diff]
+    //   );
+    // } catch (err) {
+    //   console.error(`Failed to insert commit ${hash}:`, err);
+    // }
   
-  // }
+  }
 
-  // return details;
+  return details;
 }
 
 function isBotAuthor(name = "", email = "") {

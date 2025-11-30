@@ -24,13 +24,18 @@ app.post("/categorize", async (req, res) => {
       return res.status(400).json({ ok: false, error: "prompt and repoPath required" });
     }
 
-    // console.log("[/categorize] hit", { prompt, repoPath, refresh });
+    console.log("[/categorize] hit", { prompt, repoPath, refresh });
 
     // 1) Build context JSON & gather commit metadata (fresh each request; optional git fetch)
     const [contextJSON, commitDetails] = await Promise.all([
-      buildPromptContext(repoPath, { refreshRemote: !!refresh }),
-      fetchCommitDetails(repoPath)
+      buildPromptContext(repoPath),
+      // fetchCommitDetails(repoPath)
     ]);
+
+    // console.log("contextjson",contextJSON);
+
+    // console.log("commit",commitDetails)
+
     // console.log("[/categorize] commit details:", commitDetails.map((c) => ({
     //   commitId: c.commitId,
     //   author: c.author,
@@ -38,12 +43,13 @@ app.post("/categorize", async (req, res) => {
     //   message: c.message.split("\n")[0],
     //   diffPreview: c.codeDiff ? `${c.codeDiff.split("\n").slice(0, 5).join("\n")}...` : null
     // })));
-    if (commitDetails.length === (commitLimit || 100)) {
-      console.log(`[/categorize] commit list truncated to ${commitDetails.length} entries (set commitLimit to adjust).`);
-    }
+    // if (commitDetails.length === (commitLimit || 100)) {
+    //   console.log(`[/categorize] commit list truncated to ${commitDetails.length} entries (set commitLimit to adjust).`);
+    // }
 
     // 2) Run hybrid categorizer with that JSON
     const observation = await runCategorizerAgent({ prompt, repoPath, context: contextJSON });
+    console.log("observation",observation)
     
     res.json({
       ok: true,

@@ -6,10 +6,10 @@ import { runPromptCategorizerLLM } from "../agents/llmCategorizer.mjs";
 
 async function llmNode(state = {}) {
   const { prompt, repoPath, context, draft } = state;
-  console.log("[llmNode] incoming draft:", {
-    doc_type: draft?.doc_type,
-    confidence: draft?.confidence
-  });
+  // console.log("[llmNode] incoming draft:", {
+  //   doc_type: draft?.doc_type,
+  //   confidence: draft?.confidence
+  // });
   try {
     const observation = await runPromptCategorizerLLM({
       prompt,
@@ -18,11 +18,11 @@ async function llmNode(state = {}) {
       initialObservation: draft
     });
     if (observation) {
-      console.log("[llmNode] llm observation:", {
-        doc_type: observation.doc_type,
-        confidence: observation.confidence,
-        provider_version: observation.version
-      });
+      // console.log("[llmNode] llm observation:", {
+      //   doc_type: observation.doc_type,
+      //   confidence: observation.confidence,
+      //   provider_version: observation.version
+      // });
       return { ...state, draft: observation };
     }
   } catch (error) {
@@ -32,10 +32,10 @@ async function llmNode(state = {}) {
 }
 
 function finalizeNode(state) {
-  console.log("[finalizeNode] finalizing observation:", {
-    doc_type: state?.draft?.doc_type,
-    confidence: state?.draft?.confidence
-  });
+  // console.log("[finalizeNode] finalizing observation:", {
+  //   doc_type: state?.draft?.doc_type,
+  //   confidence: state?.draft?.confidence
+  // });
   return { ...state, final: state.draft };
 }
 

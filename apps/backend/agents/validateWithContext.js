@@ -1,27 +1,75 @@
 function normalize(s) { return (s || "").toLowerCase().replace(/^v\./, "v"); }
 
+// function snapToList(candidate, list) {
+//   if (!candidate) return { value: null, matched: false };
+//   const c = normalize(candidate);
+//   const exact = list.find(x => normalize(x) === c);
+//   if (exact) return { value: exact, matched: true };
+//   // const starts = list.find(x => normalize(x).startsWith(c));
+//   // if (starts) return { value: starts, matched: true };
+//   return { value: candidate, matched: false };
+// }
+
 function snapToList(candidate, list) {
   if (!candidate) return { value: null, matched: false };
+
+  const normalize = (s) =>
+    (s || "")
+      .trim()
+      .toLowerCase()
+      .replace(/^release[-_]?/, "")
+      .replace(/^v\./, "v")
+      .replace(/^v/, "")
+      .replace(/^[.]/, "");
+
   const c = normalize(candidate);
-  const exact = list.find(x => normalize(x) === c);
-  if (exact) return { value: exact, matched: true };
-  // const starts = list.find(x => normalize(x).startsWith(c));
-  // if (starts) return { value: starts, matched: true };
-  return { value: candidate, matched: false };
+
+  for (const tag of list) {
+    if (normalize(tag) === c) {
+      return { value: tag, matched: true };
+    }
+  }
+
+  return { value: null, matched: false };
 }
+
+
+// function authorMatch(candidate, authors) {
+//   if (!candidate) return { value: null, matched: false };
+//   const c = candidate.toLowerCase().replace(/^@/, "");
+//   for (const a of authors || []) {
+//     const nm = (a.name || "").toLowerCase();
+//     const em = (a.email || "").toLowerCase();
+//     if (nm.includes(c) || em.includes(c)) {
+//       // return { value: `${a.name}${a.email ? " <" + a.email + ">" : ""}`, matched: true };
+//       return {value: a.name, matched:true};
+//     }
+//   }
+//   return { value: null, matched: false };
+// }
 
 function authorMatch(candidate, authors) {
   if (!candidate) return { value: null, matched: false };
-  const c = candidate.toLowerCase().replace(/^@/, "");
-  for (const a of authors || []) {
-    const nm = (a.name || "").toLowerCase();
-    const em = (a.email || "").toLowerCase();
-    if (nm.includes(c) || em.includes(c)) {
-      return { value: `${a.name}${a.email ? " <" + a.email + ">" : ""}`, matched: true };
+
+  // normalize input
+  const c = candidate.trim().toLowerCase().replace(/^@/, "");
+
+  for (const a of (authors || [])) {
+    const nm = (a.name || "").trim().toLowerCase();
+    const em = (a.email || "").trim().toLowerCase();
+
+    // strict, exact match only
+    if (nm === c || em === c) {
+      // console.log("a.name",a.name);
+      // console.log(candidate)
+      return { value: a.name, matched: true };
     }
   }
-  return { value: candidate, matched: false };
+
+  // no exact match found
+  return { value: null, matched: false };
 }
+
 
 export function validateWithContext(docType, extracted, context) {
   const ctx = context || { tags: [], authors: [], features: [] };

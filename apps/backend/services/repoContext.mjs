@@ -61,7 +61,15 @@ async function getReleases(git) {
 async function getAuthors(git) {
   const raw = await git.raw(["shortlog", "-se", "HEAD"]);
   const lines = raw.split("\n").map(l => l.trim()).filter(Boolean);
-  const authors = lines.map(l => ({ name: l.replace(/^\d+\s+/, ""), email: "" }));
+  // const authors = lines.map(l => ({ name: l.replace(/^\d+\s+/, ""), email: "" }));
+  const authors = lines.map(l => {
+    const cleaned = l.replace(/^\d+\s+/, "")        // remove commit count
+                      .replace(/\s*<.*>/, "")       // remove <email>
+                      .trim();
+    return { name: cleaned, email: "" };
+  });
+  
+  // console.log("a1, authots",authors)
 
   await Promise.all(
     authors.map(async (a) => {
@@ -72,5 +80,6 @@ async function getAuthors(git) {
     })
   );
 
+  // console.log("authors",authors)
   return authors;
 }

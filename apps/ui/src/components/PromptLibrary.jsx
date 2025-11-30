@@ -1,9 +1,9 @@
 export default function PromptLibrary({ onUse = () => {} }) {
   const samples = [
-    { label: "RN: Release notes (between tags)", value: "Generate release notes from V.10.0.0 to V.23.5" },
-    { label: "RN: What changed last minor", value: "What changed between v0.110.0 and v0.111.0" },
+    { label: "RN: Generate release notes for specific version", value: "Generate release notes for v4.4.7" },
+    { label: "RN: What changed between tags", value: "What changed between v4.4.5 and v4.4.7" },
     { label: "PKT: KT for author", value: "Create a knowledge transfer document for @tiangolo" },
-    { label: "PKT: Summarize contributions", value: "Summarize key contributions by Sebastian Ramirez" },
+    // { label: "PKT: Summarize contributions", value: "Summarize key contributions by Sebastian Ramirez" },
     { label: "Invalid prompt (test)", value: "Order pizza from the nearest store" }
   ];
 
