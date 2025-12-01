@@ -18,7 +18,8 @@ export default function App() {
         body: JSON.stringify({ prompt, repoPath, refresh })
       });
       const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "Request failed");
+      // if (!data.ok) throw new Error(data.error || "Request failed");
+      if (!data.ok) { setResult({ error: data.message || data.error || "Request failed", doc_type: data.doc_type, extracted: data.extracted }); return; }
       setResult(data.tool.observation);
       setContext(data.prompt_context);
     } catch (e) {
