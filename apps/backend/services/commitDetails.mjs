@@ -90,8 +90,8 @@ export async function fetchCommitDetails(repoPath, { from, to } = {}) {
       release_tag:releaseTags,
       code_diff: diff
     });
-
-    // try {
+    //uncomment only when you want to insert data into table
+   // try {
     //   await pool.query(
     //     `INSERT INTO public.commits
     //      (commit_id, message, author_name, author_email, committed_at, release_tag, code_diff)
@@ -106,6 +106,40 @@ export async function fetchCommitDetails(repoPath, { from, to } = {}) {
   }
 
   return details;
+}
+
+export async function fetchAllCommits() {
+  const result = await pool.query(
+    `SELECT commit_id, message, author_name, author_email, committed_at, release_tag, code_diff
+     FROM public.commits
+     ORDER BY committed_at DESC`
+  );
+  return result.rows;
+}
+
+export async function fetchCommitsByAuthor(identifier) {
+  if (!identifier) return [];
+  const result = await pool.query(
+    `SELECT commit_id, message, author_name, author_email, committed_at, release_tag, code_diff
+     FROM public.commits
+     WHERE LOWER(author_name) = LOWER($1) OR LOWER(author_email) = LOWER($1)
+     ORDER BY committed_at DESC`,
+    [identifier]
+  );
+  return result.rows;
+}
+
+export async function fetchCommitsByReleaseTags(tags = []) {
+  const filtered = (tags || []).filter(Boolean);
+  if (filtered.length === 0) return [];
+  const result = await pool.query(
+    `SELECT commit_id, message, author_name, author_email, committed_at, release_tag, code_diff
+     FROM public.commits
+     WHERE release_tag = ANY($1::text[])
+     ORDER BY committed_at DESC`,
+    [filtered]
+  );
+  return result.rows;
 }
 
 function isBotAuthor(name = "", email = "") {

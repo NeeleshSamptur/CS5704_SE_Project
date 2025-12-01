@@ -3,13 +3,16 @@ import { StateGraph } from "@langchain/langgraph";
 import { initialState, isConfident, stateChannels } from "./state.mjs";
 import { categorizerNode } from "../agents/promptCategorizer.node.js";
 import { runPromptCategorizerLLM } from "../agents/llmCategorizer.mjs";
+import {
+  invalidPromptNode,
+  pktMissingPersonNode,
+  rnMissingTagsNode,
+  pktAgentNode,
+  rnAgentNode
+} from "../agents/postCategorizer.node.js";
 
 async function llmNode(state = {}) {
   const { prompt, repoPath, context, draft } = state;
-  // console.log("[llmNode] incoming draft:", {
-  //   doc_type: draft?.doc_type,
-  //   confidence: draft?.confidence
-  // });
   try {
     const observation = await runPromptCategorizerLLM({
       prompt,
@@ -18,11 +21,6 @@ async function llmNode(state = {}) {
       initialObservation: draft
     });
     if (observation) {
-      // console.log("[llmNode] llm observation:", {
-      //   doc_type: observation.doc_type,
-      //   confidence: observation.confidence,
-      //   provider_version: observation.version
-      // });
       return { ...state, draft: observation };
     }
   } catch (error) {
@@ -32,11 +30,23 @@ async function llmNode(state = {}) {
 }
 
 function finalizeNode(state) {
-  // console.log("[finalizeNode] finalizing observation:", {
-  //   doc_type: state?.draft?.doc_type,
-  //   confidence: state?.draft?.confidence
-  // });
   return { ...state, final: state.draft };
+}
+
+function determineOutcomeNode(state = {}) {
+  const observation = state.final || state.draft || {};
+  const docType = (observation.doc_type || "").toUpperCase();
+  const extracted = observation.extracted || {};
+
+  if (docType === "PKT") {
+    return extracted.person ? "pkt_agent" : "pkt_missing_person";
+  }
+
+  if (docType === "RN") {
+    return extracted.from_tag || extracted.to_tag ? "rn_agent" : "rn_missing_tags";
+  }
+
+  return "invalid_prompt";
 }
 
 export function buildCategorizerGraph() {
@@ -44,13 +54,29 @@ export function buildCategorizerGraph() {
     .addNode("categorize", categorizerNode)
     .addNode("llm", llmNode)
     .addNode("finalize", finalizeNode)
+    .addNode("invalid_prompt", invalidPromptNode)
+    .addNode("pkt_missing_person", pktMissingPersonNode)
+    .addNode("rn_missing_tags", rnMissingTagsNode)
+    .addNode("pkt_agent", pktAgentNode)
+    .addNode("rn_agent", rnAgentNode)
     .addEdge("__start__", "categorize")
     .addConditionalEdges("categorize", (s) => isConfident(s.draft) ? "finalize" : "llm", {
       finalize: "finalize",
       llm: "llm"
     })
     .addEdge("llm", "finalize")
-    .addEdge("finalize", "__end__");
+    .addConditionalEdges("finalize", determineOutcomeNode, {
+      invalid_prompt: "invalid_prompt",
+      pkt_missing_person: "pkt_missing_person",
+      rn_missing_tags: "rn_missing_tags",
+      pkt_agent: "pkt_agent",
+      rn_agent: "rn_agent"
+    })
+    .addEdge("invalid_prompt", "__end__")
+    .addEdge("pkt_missing_person", "__end__")
+    .addEdge("rn_missing_tags", "__end__")
+    .addEdge("pkt_agent", "__end__")
+    .addEdge("rn_agent", "__end__");
 
   return g.compile();
 }

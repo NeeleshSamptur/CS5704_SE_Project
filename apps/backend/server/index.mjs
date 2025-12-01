@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import { buildPromptContext } from "../services/repoContext.mjs";
-import { fetchCommitDetails } from "../services/commitDetails.mjs";
 import { runCategorizerAgent } from "../graph/categorizer.graph.mjs";
 
 const app = express();
@@ -26,31 +25,22 @@ app.post("/categorize", async (req, res) => {
 
     console.log("[/categorize] hit", { prompt, repoPath, refresh });
 
-    // 1) Build context JSON & gather commit metadata (fresh each request; optional git fetch)
-    const [contextJSON, commitDetails] = await Promise.all([
-      buildPromptContext(repoPath),
-      // fetchCommitDetails(repoPath)
-    ]);
-
-    // console.log("contextjson",contextJSON);
-
-    // console.log("commit",commitDetails)
-
-    // console.log("[/categorize] commit details:", commitDetails.map((c) => ({
-    //   commitId: c.commitId,
-    //   author: c.author,
-    //   releaseTags: c.releaseTags,
-    //   message: c.message.split("\n")[0],
-    //   diffPreview: c.codeDiff ? `${c.codeDiff.split("\n").slice(0, 5).join("\n")}...` : null
-    // })));
-    // if (commitDetails.length === (commitLimit || 100)) {
-    //   console.log(`[/categorize] commit list truncated to ${commitDetails.length} entries (set commitLimit to adjust).`);
-    // }
+    // 1) Build context JSON (fresh each request; optional git fetch)
+    const contextJSON = await buildPromptContext(repoPath);
 
     // 2) Run hybrid categorizer with that JSON
     const observation = await runCategorizerAgent({ prompt, repoPath, context: contextJSON });
-    console.log("observation",observation)
-    
+    console.log("observation", observation);
+
+    if (observation?.notification) {
+      return res.json({
+        ok: false,
+        message: observation.notification.message,
+        doc_type: observation.doc_type,
+        extracted: observation.extracted
+      });
+    }
+
     res.json({
       ok: true,
       tool: {
@@ -61,11 +51,11 @@ app.post("/categorize", async (req, res) => {
         state_patch: {
           doc_type: observation.doc_type,
           categorizer_extracted: observation.extracted,
-          categorizer_confidence: observation.confidence
+          categorizer_confidence: observation.confidence,
+          next_agent: observation.nextAgent || null
         }
       },
-      prompt_context: contextJSON,
-      // commit_details: commitDetails
+      prompt_context: contextJSON
     });
   } catch (e) {
     res.status(500).json({ ok: false, error: e?.message || String(e) });
