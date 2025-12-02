@@ -1,0 +1,13 @@
+{
+  "doc_type": "RN",
+  "confidence": 0.8,
+  "extracted": {
+    "from_tag": null,
+    "to_tag": "v4.4.3",
+    "person": null
+  },
+  "rationale": "rules 100% + context 50% ⇒ combined 80%",
+  "version": "1.0.0",
+  "nextAgent": "RN",
+  "commits": []
+}
