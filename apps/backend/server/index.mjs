@@ -179,11 +179,11 @@ app.post("/generate-release-notes", async (req, res) => {
       });
     }
 
-    console.log("this is the observation",observation)
+    // console.log("this is the observation",observation)
     const commits = observation.commits || [];
     const version = observation.extracted?.to_tag || "Unspecified";
 
-    console.log("commmits",commits?.length)
+    // console.log("commmits",commits?.length)
 
     if (commits?.length === 0) {
       return res.status(400).json({
