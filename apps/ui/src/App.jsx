@@ -100,7 +100,7 @@ export default function App() {
   return (
     <div style={{ maxWidth: 1000, margin: "40px auto", fontFamily: "Inter" }}>
       {/* NEW: Mistral Release Notes Generator */}
-      <ReleaseNotesGenerator />
+      <ReleaseNotesGenerator observation={result}/>
 
       <hr style={{ margin: "40px 0", opacity: 0.3 }} />
 

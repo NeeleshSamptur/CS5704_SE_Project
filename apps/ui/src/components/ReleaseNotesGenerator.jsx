@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 
-function ReleaseNotesGenerator() {
+function ReleaseNotesGenerator({ observation }) {
   const [tag, setTag] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
 
   const generateNotes = async () => {
     if (!tag.trim()) {
-      alert("Enter a version/tag like v0.8 or v1.0");
+      alert("Enter a version/tag like v2.4.0");
       return;
     }
 
@@ -15,22 +15,45 @@ function ReleaseNotesGenerator() {
     setResult("");
 
     try {
-      const res = await fetch("http://localhost:8788/generate-release-notes", {
+      // 1️⃣ STEP 1 — Call /categorize
+      // const categorizeRes = await fetch("http://localhost:8788/categorize", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({
+      //     prompt: `Generate release notes for ${tag}`,
+      //     repoPath: "/Users/srikanth/Desktop/mastodon",
+      //     refresh: false
+      //   })
+      // });
+
+      // const categorizeData = await categorizeRes.json();
+      // console.log("Categorizer returned:", categorizeData);
+
+      // if (!categorizeData.ok || !categorizeData.tool?.observation) {
+      //   setResult("❌ Categorizer failed or no commits found");
+      //   setLoading(false);
+      //   return;
+      // }
+
+      // const observation = categorizeData.tool.observation;
+
+      // 2️⃣ STEP 2 — Call /generate-release-notes with observation
+      // console.log("This is the observations",observation);
+      const rnRes = await fetch("http://localhost:8788/generate-release-notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: `Generate release notes for ${tag}`,
-          repoPath: "/Users/srikanth/Desktop/mastodon",
-          refresh: false
-        }),
+          observation,
+          userPrompt: `Generate release notes for ${tag}`
+        })
       });
 
-      const data = await res.json();
+      const rnData = await rnRes.json();
 
-      if (data?.output) {
-        setResult(data.output);
+      if (rnData?.release_notes) {
+        setResult(rnData.release_notes);
       } else {
-        setResult("⚠ No output from backend");
+        setResult("⚠ No release notes returned from backend");
       }
     } catch (err) {
       console.error(err);
@@ -46,7 +69,7 @@ function ReleaseNotesGenerator() {
 
       <input
         type="text"
-        placeholder="v0.8"
+        placeholder="v2.4.0"
         value={tag}
         onChange={(e) => setTag(e.target.value)}
         style={{
