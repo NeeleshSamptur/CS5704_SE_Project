@@ -7,7 +7,7 @@ function ReleaseNotesGenerator({ observation }) {
 
   const generateNotes = async () => {
     if (!tag.trim()) {
-      alert("Enter a version/tag like v2.4.0");
+      alert("Enter a version/tag like 1.97.0");
       return;
     }
 
@@ -69,7 +69,7 @@ function ReleaseNotesGenerator({ observation }) {
 
       <input
         type="text"
-        placeholder="v2.4.0"
+        placeholder="1.97.0"
         value={tag}
         onChange={(e) => setTag(e.target.value)}
         style={{

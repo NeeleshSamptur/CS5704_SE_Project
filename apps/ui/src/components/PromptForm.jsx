@@ -39,7 +39,7 @@ export default function PromptForm({ initialRepo = "", prompt, onChangePrompt, o
       </label>
       <button type="submit"
         style={{ padding: "10px 16px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 700 }}>
-        Classify
+        Generate context
       </button>
     </form>
   );

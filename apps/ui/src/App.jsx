@@ -106,7 +106,7 @@ export default function App() {
 
       {/* Original RN/PKT/FKT Classifier UI */}
       <PromptForm
-        initialRepo="/Users/srikanth/desktop/mastodon"
+        initialRepo="/Users/srikanth/desktop/vscode"
         prompt={prompt}
         onChangePrompt={setPrompt}
         onSubmit={handleSubmit}

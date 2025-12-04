@@ -192,7 +192,7 @@ app.post("/generate-release-notes", async (req, res) => {
       });
     }
 
-    console.log(`🚀 Generating release notes for ${version} using Mistral…`);
+    console.log(` Generating release notes for ${version} using Mistral…`);
 
     // Call local Mistral (Ollama)
     const releaseNotes = await mistralGenerate({
@@ -206,7 +206,7 @@ app.post("/generate-release-notes", async (req, res) => {
       release_notes: releaseNotes,
     });
   } catch (err) {
-    console.error("🔥 Mistral RN Error:", err);
+    console.error(" Mistral RN Error:", err);
     return res.status(500).json({
       ok: false,
       error: err?.message || "Unknown error",
@@ -217,5 +217,5 @@ app.post("/generate-release-notes", async (req, res) => {
 // Start server
 const PORT = process.env.PORT || 8788;
 app.listen(PORT, () =>
-  console.log(`🔥 Backend running at http://localhost:${PORT}`)
+  console.log(` Backend running at http://localhost:${PORT}`)
 );
